@@ -14,9 +14,27 @@ function calculations(name, dest, first, freq) {
     destination = dest;
     frequency = freq;
 
-    // convert the time input to a Moment.js format (req. a random date...)
-    first = moment(first, "HH mm").format("hh mm A");
-    console.log(`Converted time: ${first}`);
+    // calculate the nextArrival and minutesAway values
+    let firstTimeConverted = moment(first, "HH:mm").subtract(1, "years");
+    console.log(firstTimeConverted);
+
+    let currentTime = moment();
+    console.log(`Current time: ${moment(currentTime).format("HH:mm")}`);
+    
+    let diffTime = moment().diff(moment(firstTimeConverted), "minutes");
+    console.log(`Difference in time: ${diffTime}`);
+    
+    let timeRemain = diffTime % frequency;
+    console.log(timeRemain);
+    
+    // find the minutes until next train
+    minutesAway = frequency - timeRemain;
+    console.log(`Minutes till train: ${minutesAway}`);
+
+    // find the next train time
+    nextArrival = moment().add(minutesAway, "minutes").format("HH:mm");
+    console.log(`Next train arrival: ${nextArrival}`);
+        
 
     addData();
 }
@@ -35,6 +53,9 @@ function addData() {
 
 // document ready shorthand
 $(function () {
+
+    // timepicker option display
+    $('input.timepicker').timepicker({ timeFormat: "HH:mm"});
 
     // event listeners ===========================
 
@@ -63,17 +84,17 @@ $(function () {
     database.ref().on("child_added", function (snapshot) {
         // store the value at the moment in a variable
         let sv = snapshot.val();
-        console.log(`Snapshot: ${sv}`);
+        console.table(`Snapshot: ${sv}`);
 
         // dynamically build the HTML elements
-        let trainInfo = $("<div>").append(
+        let trainInfo = $("<tr>").append(
             $("<td>").text(sv.trainName),
             $("<td>").text(sv.destination),
             $("<td>").text(sv.frequency),
             $("<td>").text(sv.nextArrival),
             $("<td>").text(sv.minutesAway)
         );
-        
+
         // add the element onto the HTML page
         $("#entries").append(trainInfo);
 
@@ -81,3 +102,10 @@ $(function () {
         console.log("Errors handled: " + errorObject.code);
     });
 });
+
+// stuff to get the timepicker JS to work (not quite sure how it works exactly)
+// (function ($) {
+//     $(function () {
+//         $('input.timepicker').timepicker();
+//     });
+// })(jQuery);
